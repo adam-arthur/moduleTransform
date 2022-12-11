@@ -43,7 +43,7 @@ const lineGroupers = [
     },
     function shouldGroup(lineIdx, lines) {
         
-        const firstLineMatch = /createInferredNgVueComponent\(require\(['"](.*)['"]\)\)/.exec(lines[lineIdx])
+        const firstLineMatch = /createInferredNgVueComponent\((require\(['"].*['"]\))\)/.exec(lines[lineIdx])
         const secondLineMatch = /\.name/.exec(lines[lineIdx + 1])
 
         const doAllLinesMatch = (
@@ -54,7 +54,7 @@ const lineGroupers = [
             return null;
         }
         return {
-            newLine: `${getIndentation(lines[lineIdx])}createInferredNgVueComponent('${firstLineMatch[1]}')).name,`,
+            newLine: `${getIndentation(lines[lineIdx])}createInferredNgVueComponent(${firstLineMatch[1]}).name,`,
             newIdx: lineIdx + 1,
         }
     }
@@ -102,9 +102,9 @@ async function main() {
         `${process.cwd()}/**/*.ts`, 
     ])
 
-
+    let numFilesChanged = 0
     for (const file of files) {
-        console.log(file) 
+        console.log(file)
         const contents = await fs.readFile(file, 'utf-8')
 
         const topInjections = []
@@ -116,10 +116,8 @@ async function main() {
             
             const grouper = lineGroupers.map(s => s(i, ogLines)).find(v => v)
             if (grouper) {
-                console.log('Grouping')
                 i = grouper.newIdx
                 line = grouper.newLine
-                console.log('grouper', grouper.newLine)
             }
             
             const transform = transforms.find(t => t.match.test(line))
@@ -141,13 +139,18 @@ async function main() {
             )       
         }
 
-
-        console.log('Num Matches', numMatches)
-        console.log('Transform: ')
-        console.log(
-            [...topInjections, '', ...newLines].join('\n')
-        )
-        
+        if (numMatches) {
+            numFilesChanged++
+            
+            const newFileContent = [...topInjections, '', ...newLines].join('\n')
+            await fs.writeFile(file, newFileContent)
+            console.log('Updated...')
+        }
+        else {
+            console.log('Skipped...')
+        }
     }
+
+    console.log('Files Changed: ', numFilesChanged)
 }
 
