@@ -23,7 +23,6 @@ main()
 
 const lineGroupers = [
     function shouldGroup(lineIdx, lines) {
-        
         const firstLineMatch = /createInferredNgVueComponent\($/.exec(lines[lineIdx])
         const secondLineMatch = /require\(['"].*['"]/.exec(lines[lineIdx + 1])
         const thirdLineMatch = /\)?.name/.exec(lines[lineIdx + 2])
@@ -55,6 +54,40 @@ const lineGroupers = [
         }
         return {
             newLine: `${getIndentation(lines[lineIdx])}createInferredNgVueComponent(${firstLineMatch[1]}).name,`,
+            newIdx: lineIdx + 1,
+        }
+    },
+    function shouldGroup(lineIdx, lines) {
+        
+        const firstLineMatch = /require\(['"](.*)['"]\).default/.exec(lines[lineIdx])
+        const secondLineMatch = /\.name/.exec(lines[lineIdx + 1])
+
+        const doAllLinesMatch = (
+            firstLineMatch && secondLineMatch
+        );
+
+        if (!doAllLinesMatch) {
+            return null;
+        }
+        return {
+            newLine: `${getIndentation(lines[lineIdx])}require('${firstLineMatch[1]}').default.name,`,
+            newIdx: lineIdx + 1,
+        }
+    },
+    function shouldGroup(lineIdx, lines) {
+        
+        const firstLineMatch = /require\(['"](.*)['"]\)/.exec(lines[lineIdx])
+        const secondLineMatch = /\.default\.name/.exec(lines[lineIdx + 1])
+
+        const doAllLinesMatch = (
+            firstLineMatch && secondLineMatch
+        );
+
+        if (!doAllLinesMatch) {
+            return null;
+        }
+        return {
+            newLine: `${getIndentation(lines[lineIdx])}require('${firstLineMatch[1]}').default.name,`,
             newIdx: lineIdx + 1,
         }
     }

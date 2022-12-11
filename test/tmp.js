@@ -10,7 +10,11 @@ angular.module('view', [
     ).name,
     createInferredNgVueComponent(require('./sample/something/PagesTable.vue'))
         .name,
-    
+        
+    require('app/view/something/NetworkTable.vue').default
+        .name,
+    require('app/view/something/NetworkTable2.vue')
+        .default.name,
 ])
 
 const someObj = {
