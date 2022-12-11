@@ -67,7 +67,7 @@ const transforms = [
             const importName = getImportName(filePath)
             return {
                 top: `import ${importName} from '${filePath}';`,
-                inline: `createInferredNgVueComponent2(${importName}, '${lower(importName)}')`
+                inline: `createNgVueComponent(${importName}, '${lower(importName)}')`
             }
         }
     },
@@ -75,7 +75,7 @@ const transforms = [
         // require('./something').default.name
         match: /require\(['"](.*)['"]\).default.name/,
         getReplacements(filePath) {
-            const importName = getImportName(filePath)
+            const importName = `${getImportName(filePath)}Module`
             return {
                 top: `import ${importName} from '${filePath}';`,
                 inline: `${importName}.name`
@@ -86,7 +86,7 @@ const transforms = [
         // require('./something').default.name
         match: /require\(['"](.*\.html)['"]\)/,
         getReplacements(filePath) {
-            const importName = getImportName(filePath)
+            const importName = `${getImportName(filePath)}Template`
             return {
                 top: `import ${importName} from '${filePath}';`,
                 inline: `${importName}`
